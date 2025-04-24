@@ -1,19 +1,25 @@
 FROM node:18-alpine
 
-ARG N8N_VERSION=1.56.1
+# Use ARG if you ever want to override the default
+ARG N8N_VERSION=latest
 
-RUN apk add --update graphicsmagick tzdata
+# Install dependencies
+RUN apk add --no-cache graphicsmagick tzdata python3 build-base
 
-USER root
+# Install n8n globally
+RUN npm_config_user=root npm install --location=global n8n@${N8N_VERSION}
 
-RUN apk --update add --virtual build-dependencies python3 build-base && \
-    npm_config_user=root npm install --location=global n8n@${N8N_VERSION} && \
-    apk del build-dependencies
-
+# Set working directory
 WORKDIR /data
 
-EXPOSE $PORT
-
+# Set environment variables
 ENV N8N_USER_ID=root
+ENV N8N_PORT=5678
+ENV N8N_HOST=0.0.0.0
 
-CMD export N8N_PORT=$PORT && n8n start
+# Expose default port
+EXPOSE 5678
+
+# Default command
+CMD ["n8n", "start"]
+
